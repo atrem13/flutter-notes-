@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:notes/models/note-for-listing.dart';
+import 'package:notes/services/notes-services.dart';
 import 'package:notes/views/note-delete.dart';
 import 'package:notes/views/note-modify.dart';
 
@@ -9,26 +11,18 @@ class NoteList extends StatefulWidget {
 }
 
 class _NoteListState extends State<NoteList> {
-  final notes = [
-    new NoteForListing(
-        noteID: "1",
-        createDateTime: DateTime.now(),
-        latestEditDateTime: DateTime.now(),
-        noteTitle: "Note 1"),
-    new NoteForListing(
-        noteID: "2",
-        createDateTime: DateTime.now(),
-        latestEditDateTime: DateTime.now(),
-        noteTitle: "Note 2"),
-    new NoteForListing(
-        noteID: "3",
-        createDateTime: DateTime.now(),
-        latestEditDateTime: DateTime.now(),
-        noteTitle: "Note 3"),
-  ];
+  NoteService get service => GetIt.I<NoteService>();
+  List<NoteForListing> notes = [];
+  // final notes = [];
 
   String formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    notes = service.getNotesList();
   }
 
   @override
@@ -36,6 +30,13 @@ class _NoteListState extends State<NoteList> {
     return Scaffold(
       appBar: AppBar(
         title: Text('List Note'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => NoteModify()));
+        },
+        child: Icon(Icons.add),
       ),
       body: ListView.separated(
           separatorBuilder: (_, __) => Divider(
@@ -73,8 +74,10 @@ class _NoteListState extends State<NoteList> {
                 subtitle: Text(
                     'Last edited on ${formatDateTime(notes[index].latestEditDateTime)}'),
                 onTap: () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (_) => NoteModify()));
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => NoteModify(
+                            noteID: notes[index].noteID,
+                          )));
                 },
               ),
             );
